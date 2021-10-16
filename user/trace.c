@@ -1,3 +1,23 @@
+/**
+ * trace.c
+ * Trac for the process that calls it and any children that it subsequently
+ * forks. It takes one argument, an integer "mask", whose bits specify whi-
+ * ch system calls to trace. For example, to trace the fork system call, a 
+ * program calls trace(1 << SYS_fork), where SYS_fork is a syscall number 
+ * from kernel/syscall.h. 
+ * The output contains the process id, the name of the system call and the 
+ * return value.
+ * Here is a example:
+ * 
+ * trace 32 grep hello README
+ * 3: syscall read -> 1023
+ * 3: syscall read -> 966
+ * 3: syscall read -> 70
+ * 3: syscall read -> 0
+ * 
+ * In this example, trace invokes grep tracing just the read system call. 
+ * The 32 is 1<<SYS_read. 
+ */
 #include "kernel/param.h"
 #include "kernel/types.h"
 #include "kernel/stat.h"

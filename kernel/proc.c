@@ -274,6 +274,9 @@ fork(void)
     return -1;
   }
   np->sz = p->sz;
+  
+  // copy the trace mask from the parent to the child process.
+  np->mask = p->mask;
 
   np->parent = p;
 

@@ -95,3 +95,15 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// trace system call
+// called by syscall()
+uint64
+sys_trace(void)
+{
+  int n;
+  if (argint(0, &n) < 0) // get 'mask' argument from register a0
+    return -1;
+  myproc()->mask = n; // store mask in proc struct
+  return 0;
+}
