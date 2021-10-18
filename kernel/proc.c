@@ -8,6 +8,7 @@
 
 struct cpu cpus[NCPU];
 
+// all processe states in the system
 struct proc proc[NPROC];
 
 struct proc *initproc;
@@ -695,4 +696,18 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+// collect the number of processes
+uint64
+nproc(void)
+{
+  uint64 cnt = 0;
+  struct proc *p;
+
+  for(p = proc; p < &proc[NPROC]; p++){
+    if(p->state != UNUSED)
+      cnt++;
+  }
+  return cnt;
 }
