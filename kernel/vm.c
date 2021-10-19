@@ -440,3 +440,53 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+
+void 
+printwalk(pagetable_t pagetable, int level)
+{
+  if (level < 0) return;
+  // there are 2^9 = 512 PTEs in a page table.
+  for (int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    if ((pte & PTE_V) != 0){ // pte is valid
+      // the address of a lower-level page table. 
+      uint64 child = PTE2PA(pte);
+      for (int j = 2 - level; j > 0; j--) printf(".. ");
+      printf("..%d: pte %p pa %p\n", i, pte, child);
+      printwalk((pagetable_t)child, level-1);
+    }
+  }
+}
+
+/**
+ * print the given pagetable in the format described below.
+ * 
+ * The first line displays the argument to vmprint.After that 
+ * there is a line for each PTE, including PTEs that refer to 
+ * page-table pages deeper in the tree. 
+ * 
+ * Each PTE line is indented by a number of " .." that indicates 
+ * its depth in the tree. Each PTE line shows the PTE index in 
+ * its page-table page, the pte bits, and the physical address 
+ * extracted from the PTE.
+ * 
+ * It will not print PTEs that are not valid. 
+ * 
+ * page table 0x0000000087f6e000
+ * ..0: pte 0x0000000021fda801 pa 0x0000000087f6a000
+ * .. ..0: pte 0x0000000021fda401 pa 0x0000000087f69000
+ * .. .. ..0: pte 0x0000000021fdac1f pa 0x0000000087f6b000
+ * .. .. ..1: pte 0x0000000021fda00f pa 0x0000000087f68000
+ * .. .. ..2: pte 0x0000000021fd9c1f pa 0x0000000087f67000
+ * ..255: pte 0x0000000021fdb401 pa 0x0000000087f6d000
+ * .. ..511: pte 0x0000000021fdb001 pa 0x0000000087f6c000
+ * .. .. ..510: pte 0x0000000021fdd807 pa 0x0000000087f76000
+ * .. .. ..511: pte 0x0000000020001c0b pa 0x0000000080007000
+ */
+void
+vmprint(pagetable_t pagetable)
+{
+  printf("page table %p\n", pagetable);
+  printwalk(pagetable, 2);
+}
