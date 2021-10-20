@@ -445,16 +445,21 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
 void 
 printwalk(pagetable_t pagetable, int level)
 {
-  if (level < 0) return;
   // there are 2^9 = 512 PTEs in a page table.
   for (int i = 0; i < 512; i++){
     pte_t pte = pagetable[i];
-    if ((pte & PTE_V) != 0){ // pte is valid
+
+    if ((pte & PTE_V)){ // pte is valid
       // the address of a lower-level page table. 
       uint64 child = PTE2PA(pte);
       for (int j = 2 - level; j > 0; j--) printf(".. ");
       printf("..%d: pte %p pa %p\n", i, pte, child);
-      printwalk((pagetable_t)child, level-1);
+      
+      // make sure it's not a leaf pte
+      // only the leaf of the pagetable will have these flags set.
+      // see mappages funtion
+      if ((pte & (PTE_R | PTE_W | PTE_X)) == 0)
+        printwalk((pagetable_t)child, level-1);
     }
   }
 }
